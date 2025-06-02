@@ -4,6 +4,7 @@ import { AppProvider } from './context/AppContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import HomePage from './pages/HomePage';
+import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
 import ChatbotPage from './pages/ChatbotPage';
 import ChallengesPage from './pages/ChallengesPage';
@@ -15,13 +16,14 @@ import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   return (
-    <AppProvider>
-      <Router>
+    <Router>
+      <AppProvider>
         <div className="flex flex-col min-h-screen bg-neutral-50">
           <Navbar />
           <main className="flex-grow">
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/auth" element={<AuthPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/chatbot" element={<ChatbotPage />} />
               <Route path="/challenges" element={<ChallengesPage />} />
@@ -34,9 +36,9 @@ function App() {
           </main>
           <Footer />
         </div>
-      </Router>
-    </AppProvider>
+      </AppProvider>
+    </Router>
   );
 }
 
-export default App;
+export default App

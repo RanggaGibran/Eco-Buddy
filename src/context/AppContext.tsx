@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { EcoAction, EcoTip, Challenge, UserStats } from '../types';
 import { mockEcoActions, mockEcoTips, mockChallenges } from '../data/mockData';
 
@@ -13,6 +15,8 @@ interface AppContextType {
   completeChallenge: (challengeId: string) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  user: any | null;
+  signOut: () => Promise<void>;
 }
 
 const defaultUserStats: UserStats = {
@@ -34,20 +38,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [challenges, setChallenges] = useState<Challenge[]>(mockChallenges);
   const [activeChallenges, setActiveChallenges] = useState<Challenge[]>([]);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [user, setUser] = useState<any | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Load user data from localStorage or API in a real implementation
-    // This is just a placeholder for demonstration
-    const savedStats = localStorage.getItem('userStats');
-    if (savedStats) {
-      setUserStats(JSON.parse(savedStats));
-    }
+    // Check current auth status
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    // Save user stats when they change
-    localStorage.setItem('userStats', JSON.stringify(userStats));
-  }, [userStats]);
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
 
   const updateUserStats = (stats: Partial<UserStats>) => {
     setUserStats(prev => ({
@@ -89,6 +100,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         completeChallenge,
         isDarkMode,
         toggleDarkMode,
+        user,
+        signOut,
       }}
     >
       {children}
